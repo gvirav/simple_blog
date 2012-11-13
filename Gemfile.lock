@@ -125,6 +125,7 @@ DEPENDENCIES
   faker
   jquery-rails
   rails (= 3.2.8)
+  rake (= 0.9.2.2)
   rspec-rails (~> 2.0)
   sass-rails (~> 3.2.3)
   sqlite3
