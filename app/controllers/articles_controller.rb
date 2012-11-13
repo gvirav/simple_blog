@@ -1,8 +1,15 @@
 class ArticlesController < ApplicationController
+  before_filter :load_article, :only => [:show, :edit, :destroy]
+  before_filter :upcaser, :only => [:index]
+  before_filter :filter_comments, :only => [:show]
+  around_filter :flash_apology, :only => [:index]
+  # around_filter :flash_apology, :only => [:show, :edit, :destroy]
   # GET /articles
   # GET /articles.json
+
   def index
     @articles = Article.all
+    raise if @articles.blank?
 
     respond_to do |format|
       format.html # index.html.erb
@@ -34,7 +41,6 @@ class ArticlesController < ApplicationController
 
   # GET /articles/1/edit
   def edit
-    @article = Article.find(params[:id])
   end
 
   # POST /articles
@@ -56,7 +62,6 @@ class ArticlesController < ApplicationController
   # PUT /articles/1
   # PUT /articles/1.json
   def update
-    @article = Article.find(params[:id])
 
     respond_to do |format|
       if @article.update_attributes(params[:article])
@@ -72,7 +77,6 @@ class ArticlesController < ApplicationController
   # DELETE /articles/1
   # DELETE /articles/1.json
   def destroy
-    @article = Article.find(params[:id])
     @article.destroy
 
     respond_to do |format|
@@ -80,4 +84,38 @@ class ArticlesController < ApplicationController
       format.json { head :no_content }
     end
   end
+
+  private
+    def load_article
+      @article = Article.find(params[:id])
+    end
+
+    def upcaser
+      @articles = Article.all
+      @articles.each do |a|
+        a.title.upcase!
+      end
+    end
+
+    def filter_comments
+      @comments = @article.comments.each do |c|
+        c.body.gsub!('sad', 'happy')
+      end
+    end
+
+    def blank_articles
+      begin
+        yield
+      rescue
+        render :text => "No Articles"
+      end
+    end
+
+    def flash_apology
+      begin
+        yield
+      rescue
+        redirect_to new_article_path, notice: 'Sorry'
+      end
+    end
 end
